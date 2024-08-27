@@ -1,10 +1,12 @@
 import { Label } from '@radix-ui/react-label'
+import { useMutation } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
+import { registerRestaurant } from '@/api/register-restaurant'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -26,16 +28,25 @@ export function SignUp() {
     formState: { isSubmitting },
   } = useForm<signUpForm>()
 
+  const { mutateAsync: registerRestaurantFn } = useMutation({
+    mutationFn: registerRestaurant,
+  })
+
   async function handleSignUp(data: signUpForm) {
     try {
       console.log(data)
 
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await registerRestaurantFn({
+        restaurantName: data.restaurantName,
+        managerName: data.managerName,
+        email: data.email,
+        phone: data.phone,
+      })
 
       toast.success('Restaurante cadastrado com sucesso', {
         action: {
           label: 'Login',
-          onClick: () => navigate('/signin'),
+          onClick: () => navigate(`/signin?email=${data.email}`),
         },
       })
     } catch {
@@ -48,7 +59,7 @@ export function SignUp() {
       <Helmet title="Cadastro" />
       <div className="p-8">
         <Button variant="link" asChild className="absolute right-8 top-8">
-          <Link to="/signin">Voltar</Link>
+          <Link to="/signin">Fazer login</Link>
         </Button>
         <div className="flex w-[350px] flex-col justify-center gap-6">
           <div className="flex flex-col gap-2 text-center">
